@@ -26,24 +26,39 @@ def set_up_board(screen):
   #  pygame.draw.rect(screen, color, pygame.Rect(30, 30, 60, 60))
 
     pygame.display.update()  # need to make any updates to the screen to be visible
-    r
+
     return board_spaces
+
+
+def clear_board():
+    pass  # TODO
+
+
+def player_move(screen, move, player_color):
+    pass  # TODO
+
+
+def game_status(screen, board_spaces):
+    pass  # TODO need to figure out how are going to decide who won
 
 
 def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     set_up_board(screen)
-    done = False
+    playing = True
     clear_board = False
 
-    while not done:
+    while playing:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                done = True
-
+                playing = False
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 clear_board = True  # clear the board when you press the space key
+
+            while event.type != pygame.MOUSEBUTTONUP:
+                continue  # wait for the user to click something
+
         if clear_board:
             # TODO
             color = BLUE
