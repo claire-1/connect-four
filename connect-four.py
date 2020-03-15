@@ -66,8 +66,17 @@ def row_winner(board, row, col, player):
             and board[row + 3, col] == player):
         return player
 
-    return None  # keep playinng
-# def game_status(screen, board_spaces):
+    return None  # keep playing
+
+
+def col_winner(board, row, col, player):
+    if (board[row, col] == player
+        and board[row, col + 1] == player
+        and board[row, col + 2] == player
+            and board[row, col + 3] == player):
+        return player
+
+    return None  # keep playing
 
 
 def game_status(board):
@@ -80,6 +89,16 @@ def game_status(board):
                 return (winner, False)
 
             winner = row_winner(board, row, col, PLAYER_2)
+            if winner is not None:
+                print("WINNER2")
+                return (winner, False)
+
+            winner = col_winner(board, row, col, PLAYER_1)
+            if winner is not None:
+                print("WINNER1")
+                return (winner, False)
+
+            winner = col_winner(board, row, col, PLAYER_2)
             if winner is not None:
                 print("WINNER2")
                 return (winner, False)
