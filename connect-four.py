@@ -15,8 +15,8 @@ ROW_SPACES = 6 + 1
 COLUMN_SPACES = 7 + 1
 RADIUS = 40
 EMPTY = 0
-PLAYER_1 = 1
-PLAYER_2 = 2
+PLAYER_1 = "player 1"
+PLAYER_2 = "player 2"
 
 
 def set_up_board(screen):
@@ -79,6 +79,28 @@ def col_winner(board, row, col, player):
     return None  # keep playing
 
 
+def left_diagonal_winner(board, row, col, player):
+    # starts from the top right corner
+    if (board[row, col] == player
+        and board[row-1, col-1] == player
+        and board[row-2, col-2] == player
+            and board[row-3, col-3] == player):
+        return player
+
+    return None
+
+
+def right_diagonal_winner(board, row, col, player):
+    # starts from the top right corner
+    if (board[row, col] == player
+        and board[row+1, col+1] == player
+        and board[row+2, col+2] == player
+            and board[row+3, col+3] == player):
+        return player
+
+    return None
+
+
 def game_status(board):
     # Check for row win
     for (row, col) in board:
@@ -93,12 +115,35 @@ def game_status(board):
                 print("WINNER2")
                 return (winner, False)
 
+        if (col + 3) < COLUMN_SPACES:
             winner = col_winner(board, row, col, PLAYER_1)
             if winner is not None:
                 print("WINNER1")
                 return (winner, False)
 
             winner = col_winner(board, row, col, PLAYER_2)
+            if winner is not None:
+                print("WINNER2")
+                return (winner, False)
+
+        if (col + 3) < COLUMN_SPACES and (row + 3) < ROW_SPACES:
+            winner = right_diagonal_winner(board, row, col, PLAYER_1)
+            if winner is not None:
+                print("WINNER1")
+                return (winner, False)
+
+            winner = right_diagonal_winner(board, row, col, PLAYER_2)
+            if winner is not None:
+                print("WINNER2")
+                return (winner, False)
+
+        if (col - 3) > 0 and (row - 3) > 0:
+            winner = left_diagonal_winner(board, row, col, PLAYER_1)
+            if winner is not None:
+                print("WINNER1")
+                return (winner, False)
+
+            winner = left_diagonal_winner(board, row, col, PLAYER_2)
             if winner is not None:
                 print("WINNER2")
                 return (winner, False)
@@ -138,7 +183,6 @@ def main():
 
             if event.type != pygame.MOUSEBUTTONUP:
                 continue  # wait for the user to click something
-            # TODO here
 
             (clicked_x, clicked_y) = event.pos
             for (clicked_circle_screen_loc, board_location) in board_spaces_locations.items():
@@ -151,7 +195,6 @@ def main():
                         board_column_locations[col])
 
                     board[(placement_row, col)] = whose_move
-                    (winner, playing) = game_status(board)
 
                     if whose_move == PLAYER_1:
                         pygame.draw.circle(screen, PLAYER_1_TITLE_COLOR,
@@ -161,6 +204,19 @@ def main():
                         whose_move = PLAYER_1
                         pygame.draw.circle(screen, PLAYER_2_TITLE_COLOR,
                                            open_screen_loc, RADIUS)
+
+                    (winner, playing) = game_status(board)
+                    if winner is not None:
+                        # pygame.draw.rect(
+                        #     screen, pygame.color.THECOLORS["orange"], pygame.Rect(30, 30, 60, 60))
+                        # None lets you use the default system font
+                        font = pygame.font.SysFont(None, 100)
+                        text = font.render(
+                            "The winner is " + str(winner), True, ORANGE)
+                        text_rect = text.get_rect(
+                            center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
+
+                        screen.blit(text, text_rect)
                     # TODO need to find the last filled in location in a column and then fill in that spot
                     # really need a dictionary that allows for searching on both the key and the value
 
@@ -176,8 +232,14 @@ def main():
 
         pygame.display.flip()  # need to make any updates to the screen to be visible
 
-    # while True:
-    #     print()
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                waiting = False
+
+            # TODO handle resetting the board to play again
+            pygame.display.flip()
 
 
 if __name__ == "__main__":
