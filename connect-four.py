@@ -1,3 +1,5 @@
+import math
+
 import pygame
 
 BLUE = (0, 128, 255)  # TODO delete eventually
@@ -5,29 +7,35 @@ ORANGE = (255, 100, 0)  # TODO delete eventually
 SCREEN_WIDTH = 900
 SCREEN_HEIGHT = 800
 OPEN_TILE_COLOR = pygame.color.THECOLORS['white']  # TODO need to make gray
-FIRST_PERSON_TITLE_COLOR = (255, 100, 0)  # TODO need to make red
-SECOND_PERSON_TITLE_COLOR = (255, 100, 10)  # TODO need to make yellow
+PLAYER_1_TITLE_COLOR = pygame.color.THECOLORS['red']  # TODO need to make red
+# TODO need to make yellow
+PLAYER_2_TITLE_COLOR = pygame.color.THECOLORS['yellow']
 HORIZONTAL_SPACES = 7 + 1
 VERTICAL_SPACES = 6 + 1
 RADIUS = 40
+EMPTY = 0
+PLAYER_1 = 1
+PLAYER_2 = 2
 
 
 def set_up_board(screen):
-    board_spaces = dict()
+    board_spaces_locations = dict()
+    board = dict()
     color = BLUE
     screen.fill(pygame.color.THECOLORS['mediumblue'])
     for i in range(1, VERTICAL_SPACES):
         for j in range(1, HORIZONTAL_SPACES):
-            screen_location = (int(j*(SCREEN_HEIGHT /
-                                      VERTICAL_SPACES) - RADIUS), int(i*(SCREEN_WIDTH/HORIZONTAL_SPACES) - RADIUS))
+            screen_location = (math.floor(j*(SCREEN_HEIGHT /
+                                             VERTICAL_SPACES) - RADIUS), math.floor(i*(SCREEN_WIDTH/HORIZONTAL_SPACES) - RADIUS))
             pygame.draw.circle(screen, OPEN_TILE_COLOR,
                                screen_location, RADIUS)
-            board_spaces[(i, j)] = screen_location
+            board_spaces_locations[screen_location] = (i, j)
+            board[(i, j)] = EMPTY
   #  pygame.draw.rect(screen, color, pygame.Rect(30, 30, 60, 60))
 
     pygame.display.update()  # need to make any updates to the screen to be visible
 
-    return board_spaces
+    return (board_spaces_locations, board)
 
 
 def clear_board():
@@ -45,9 +53,10 @@ def game_status(screen, board_spaces):
 def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    set_up_board(screen)
+    (board_spaces_locations, board) = set_up_board(screen)
     playing = True
     clear_board = False
+    whose_move = PLAYER_1
 
     while playing:
         for event in pygame.event.get():
@@ -56,8 +65,26 @@ def main():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 clear_board = True  # clear the board when you press the space key
 
-            while event.type != pygame.MOUSEBUTTONUP:
+            if event.type != pygame.MOUSEBUTTONUP:
                 continue  # wait for the user to click something
+            # TODO here
+
+            (clicked_x, clicked_y) = event.pos
+            for screen_location in board_spaces_locations:
+                x_squared = (clicked_x - screen_location[0])**2
+                y_squared = (clicked_y - screen_location[1])**2
+
+                if (math.sqrt(x_squared + y_squared)) < 60:
+                    if whose_move == PLAYER_1:
+                        pygame.draw.circle(screen, PLAYER_1_TITLE_COLOR,
+                                           screen_location, RADIUS)
+                        whose_move = PLAYER_2
+                    else:
+                        pygame.draw.circle(screen, PLAYER_2_TITLE_COLOR,
+                                           screen_location, RADIUS)
+                        whose_move = PLAYER_1
+                    print("IN SQUARE " +
+                          str(board_spaces_locations[screen_location]))
 
         if clear_board:
             # TODO
