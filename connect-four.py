@@ -1,3 +1,4 @@
+import heapq
 import math
 
 import pygame
@@ -10,8 +11,8 @@ OPEN_TILE_COLOR = pygame.color.THECOLORS['white']  # TODO need to make gray
 PLAYER_1_TITLE_COLOR = pygame.color.THECOLORS['red']  # TODO need to make red
 # TODO need to make yellow
 PLAYER_2_TITLE_COLOR = pygame.color.THECOLORS['yellow']
-HORIZONTAL_SPACES = 7 + 1
-VERTICAL_SPACES = 6 + 1
+ROW_SPACES = 6 + 1
+COLUMN_SPACES = 7 + 1
 RADIUS = 40
 EMPTY = 0
 PLAYER_1 = 1
@@ -24,21 +25,25 @@ def set_up_board(screen):
     board = dict()
     color = BLUE
     screen.fill(pygame.color.THECOLORS['mediumblue'])
-    for i in range(1, VERTICAL_SPACES):
+    for col in range(1, COLUMN_SPACES):
         board_column_heap = list()
-        for j in range(1, HORIZONTAL_SPACES):
+        for row in range(1, ROW_SPACES):
 
-            screen_location = (math.floor(j*(SCREEN_HEIGHT /
-                                             VERTICAL_SPACES) - RADIUS), math.floor(i*(SCREEN_WIDTH/HORIZONTAL_SPACES) - RADIUS))
+            screen_location = (math.floor(col*(SCREEN_HEIGHT /
+                                               ROW_SPACES) - RADIUS), math.floor(row*(SCREEN_WIDTH/ROW_SPACES) - RADIUS))
             pygame.draw.circle(screen, OPEN_TILE_COLOR,
                                screen_location, RADIUS)
-            board_spaces_locations[screen_location] = (i, j)
+            board_spaces_locations[screen_location] = (row, col)
 
-            board_column_heap.append(j, screen_location)
+           # board_column_heap.append((row, screen_location))
+            heapq.heappush(board_column_heap,
+                           (ROW_SPACES - row, screen_location))
+            # print("for location " + str((row, col)) +
+            #       "filling in board_column_heap " + str(board_column_heap))
 
-            board[(i, j)] = EMPTY  # TODO maybe don't need
+            board[(row, col)] = EMPTY  # TODO maybe don't need
         # TODO how going to get all spaces in column?
-        board_column_locations[i] = board_column_heap
+        board_column_locations[col] = board_column_heap
   #  pygame.draw.rect(screen, color, pygame.Rect(30, 30, 60, 60))
 
     pygame.display.update()  # need to make any updates to the screen to be visible
@@ -78,23 +83,34 @@ def main():
             # TODO here
 
             (clicked_x, clicked_y) = event.pos
-            for (screen_location, board_location) in board_spaces_locations:
-                x_squared = (clicked_x - screen_location[0])**2
-                y_squared = (clicked_y - screen_location[1])**2
+            for (clicked_circle_screen_loc, board_location) in board_spaces_locations.items():
+                x_squared = (clicked_x - clicked_circle_screen_loc[0])**2
+                y_squared = (clicked_y - clicked_circle_screen_loc[1])**2
 
                 if (math.sqrt(x_squared + y_squared)) < 60:
                     (row, col) = board_location
-                    # TODO here -- trying to get the lowest filled in space
-                    heapq.pop(board_column_locations[VERTICAL_SPACES - col])
+                    # print("board location " + str(board_location))
+                    # #  board_location works correctly
+                    # #  -- trying to get the lowest filled in space
+                    # print("my list " + str(board_column_locations[col]))
+                    (row, open_screen_loc) = heapq.heappop(
+                        board_column_locations[col])
+
+                    # print("open row " + str(row))
+                    # print("open col " + str(col))
 
                     if whose_move == PLAYER_1:
+                        # pygame.draw.circle(screen, PLAYER_1_TITLE_COLOR,
+                        #                    clicked_circle_screen_loc, RADIUS)
                         pygame.draw.circle(screen, PLAYER_1_TITLE_COLOR,
-                                           screen_location, RADIUS)
+                                           open_screen_loc, RADIUS)
                         whose_move = PLAYER_2
                     else:
-                        pygame.draw.circle(screen, PLAYER_2_TITLE_COLOR,
-                                           screen_location, RADIUS)
+                        # pygame.draw.circle(screen, PLAYER_2_TITLE_COLOR,
+                        #                    clicked_circle_screen_loc, RADIUS)
                         whose_move = PLAYER_1
+                        pygame.draw.circle(screen, PLAYER_2_TITLE_COLOR,
+                                           open_screen_loc, RADIUS)
                     # TODO need to find the last filled in location in a column and then fill in that spot
                     # really need a dictionary that allows for searching on both the key and the value
 
