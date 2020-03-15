@@ -59,7 +59,46 @@ def player_move(screen, move, player_color):
     pass  # TODO
 
 
-def game_status(screen, board_spaces):
+def row_winner(board, row, col, player):
+    if (board[row, col] == player
+        and board[row + 1, col] == player
+        and board[row + 2, col] == player
+            and board[row + 3, col] == player):
+        return player
+
+    return None  # keep playinng
+# def game_status(screen, board_spaces):
+
+
+def game_status(board):
+    # Check for row win
+    for (row, col) in board:
+        if (row + 3) < ROW_SPACES:
+            winner = row_winner(board, row, col, PLAYER_1)
+            if winner is not None:
+                print("WINNER1")
+                return (winner, False)
+
+            winner = row_winner(board, row, col, PLAYER_2)
+            if winner is not None:
+                print("WINNER2")
+                return (winner, False)
+
+    return (None, True)  # no winner and still playing
+    #     if winner is not None:
+    #         return winner
+    # else:
+    #     return
+    # if (board[row, col] == PLAYER_1
+    #     and board[row + 1, col] == PLAYER_1
+    #     and board[row + 2, col] == PLAYER_1
+    #         and board[row + 3, col] == PLAYER_1):
+
+    #     return PLAYER_1  # winner
+
+    # Check for col win
+    # Check for right diagonal win
+    # Check for left diagonal win
     pass  # TODO need to figure out how are going to decide who won
 
 
@@ -89,25 +128,17 @@ def main():
 
                 if (math.sqrt(x_squared + y_squared)) < 60:
                     (row, col) = board_location
-                    # print("board location " + str(board_location))
-                    # #  board_location works correctly
-                    # #  -- trying to get the lowest filled in space
-                    # print("my list " + str(board_column_locations[col]))
-                    (row, open_screen_loc) = heapq.heappop(
+                    (placement_row, open_screen_loc) = heapq.heappop(
                         board_column_locations[col])
 
-                    # print("open row " + str(row))
-                    # print("open col " + str(col))
+                    board[(placement_row, col)] = whose_move
+                    (winner, playing) = game_status(board)
 
                     if whose_move == PLAYER_1:
-                        # pygame.draw.circle(screen, PLAYER_1_TITLE_COLOR,
-                        #                    clicked_circle_screen_loc, RADIUS)
                         pygame.draw.circle(screen, PLAYER_1_TITLE_COLOR,
                                            open_screen_loc, RADIUS)
                         whose_move = PLAYER_2
                     else:
-                        # pygame.draw.circle(screen, PLAYER_2_TITLE_COLOR,
-                        #                    clicked_circle_screen_loc, RADIUS)
                         whose_move = PLAYER_1
                         pygame.draw.circle(screen, PLAYER_2_TITLE_COLOR,
                                            open_screen_loc, RADIUS)
@@ -125,6 +156,9 @@ def main():
       #  pygame.draw.rect(screen, color, pygame.Rect(30, 30, 60, 60))
 
         pygame.display.flip()  # need to make any updates to the screen to be visible
+
+    # while True:
+    #     print()
 
 
 if __name__ == "__main__":
