@@ -5,8 +5,10 @@ import pygame
 
 BLUE = (0, 128, 255)  # TODO delete eventually
 ORANGE = (255, 100, 0)  # TODO delete eventually
-SCREEN_WIDTH = 900
-SCREEN_HEIGHT = 800
+BOARD_WIDTH = 900
+HEADER_COLOR = pygame.color.THECOLORS["darkseagreen"]
+HEADER_HEIGHT = 300
+BOARD_HEIGHT = 800
 OPEN_TILE_COLOR = pygame.color.THECOLORS['white']  # TODO need to make gray
 PLAYER_1_TITLE_COLOR = pygame.color.THECOLORS['red']  # TODO need to make red
 # TODO need to make yellow
@@ -15,8 +17,21 @@ ROW_SPACES = 6 + 1
 COLUMN_SPACES = 7 + 1
 RADIUS = 40
 EMPTY = 0
-PLAYER_1 = "player 1"
-PLAYER_2 = "player 2"
+PLAYER_1 = "red player"
+PLAYER_2 = "yellow player"
+
+
+def set_up_header(screen):
+    pass
+    # pygame.draw.rect(screen, ORANGE, (BOARD_WIDTH/2,
+    #                                   HEADER_HEIGHT/2, BOARD_WIDTH, BOARD_HEIGHT + HEADER_HEIGHT))
+
+
+def set_up_screen():
+    screen = pygame.display.set_mode(
+        (BOARD_WIDTH, BOARD_HEIGHT + HEADER_HEIGHT))
+    screen.fill(pygame.color.THECOLORS["darkcyan"])
+    return screen
 
 
 def set_up_board(screen):
@@ -24,13 +39,12 @@ def set_up_board(screen):
     board_column_locations = dict()
     board = dict()
     color = BLUE
-    screen.fill(pygame.color.THECOLORS['mediumblue'])
     for col in range(1, COLUMN_SPACES):
         board_column_heap = list()
         for row in range(1, ROW_SPACES):
 
-            screen_location = (math.floor(col*(SCREEN_HEIGHT /
-                                               ROW_SPACES) - RADIUS), math.floor(row*(SCREEN_WIDTH/ROW_SPACES) - RADIUS))
+            screen_location = (math.floor(col*(BOARD_HEIGHT /
+                                               ROW_SPACES) - RADIUS), math.floor(row*(BOARD_WIDTH/ROW_SPACES) - RADIUS))
             pygame.draw.circle(screen, OPEN_TILE_COLOR,
                                screen_location, RADIUS)
             board_spaces_locations[screen_location] = (row, col)
@@ -81,9 +95,9 @@ def col_winner(board, row, col, player):
 
 def left_diagonal_winner(board, row, col, player):
     # starts from the top right corner
-    print("row " + str(row))
-    print("col " + str(col))
-    print("left  " + str(board[(row, col)]))
+    # print("row " + str(row))
+    # print("col " + str(col))
+    # print("left  " + str(board[(row, col)]))
     # print("left  " + str(board[(row-1, col-1)]))
     # print("left  " + str(board[(row-2, col-2)]))
     # print("left  " + str(board[(row-3, col-3)]))
@@ -97,9 +111,9 @@ def left_diagonal_winner(board, row, col, player):
 
 
 def right_diagonal_winner(board, row, col, player):
-    print("row " + str(row))
-    print("col " + str(col))
-    print("right  " + str(board[(row, col)]))
+    # print("row " + str(row))
+    # print("col " + str(col))
+    # print("right  " + str(board[(row, col)]))
     # starts from the top right corner
     if (board[row, col] == player
         and board[row+1, col+1] == player
@@ -110,13 +124,36 @@ def right_diagonal_winner(board, row, col, player):
     return None
 
 
+def display_turn(screen, player):
+    cover_up_text = pygame.Rect(0, 0, BOARD_WIDTH, HEADER_HEIGHT)
+    cover_up_text.center = (BOARD_WIDTH/2, (BOARD_HEIGHT + HEADER_HEIGHT/2))
+    pygame.draw.rect(
+        screen, HEADER_COLOR, cover_up_text)
+
+    font = pygame.font.SysFont(None, 50)
+
+    text = font.render("", True, BLUE)  # TODO make var for board color
+    text_rect = text.get_rect(
+        center=(BOARD_WIDTH/2, (BOARD_HEIGHT + HEADER_HEIGHT/2)))
+
+    screen.blit(text, text_rect)
+
+    text = font.render(
+        "Next move: " + str(player), True, pygame.color.THECOLORS["yellowgreen"])
+    text_rect = text.get_rect(
+        center=(BOARD_WIDTH/2, (BOARD_HEIGHT + HEADER_HEIGHT/2)))
+
+    screen.blit(text, text_rect)
+    pygame.display.flip()
+
+
 def print_board(board, screen):
     for (row, col) in board:
         font = pygame.font.SysFont(None, 50)
         text = font.render(
-            "The winner is " + str((row, col)), True, ORANGE)
+            "The winner is " + str((row, col)), True, pygame.color.THECOLORS["yellowgreen"])
         text_rect = text.get_rect(
-            center=(SCREEN_WIDTH/2 - col, SCREEN_HEIGHT/2 - row))
+            center=(BOARD_WIDTH/2 - col, BOARD_HEIGHT/2 - row))
 
     screen.blit(text, text_rect)
 
@@ -207,6 +244,8 @@ def play(screen, board_spaces_locations, board, board_column_locations):
     whose_move = PLAYER_1
 
     while playing:
+        display_turn(screen, whose_move)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 playing = False
@@ -226,6 +265,7 @@ def play(screen, board_spaces_locations, board, board_column_locations):
                     # print("column " + str(col))
 
                     if (len(board_column_locations[col]) == 0):
+                        # all the spaces in the column are taken so the click was on accident
                         continue
 
                     (placement_row, open_screen_loc) = heapq.heappop(
@@ -234,21 +274,24 @@ def play(screen, board_spaces_locations, board, board_column_locations):
                     if whose_move == PLAYER_1:
                         pygame.draw.circle(screen, PLAYER_1_TITLE_COLOR,
                                            open_screen_loc, RADIUS)
+                        board[(placement_row, col)] = whose_move
+                        (winner, playing) = game_status(board)
                         whose_move = PLAYER_2
                     else:
-                        whose_move = PLAYER_1
                         pygame.draw.circle(screen, PLAYER_2_TITLE_COLOR,
                                            open_screen_loc, RADIUS)
+                        board[(placement_row, col)] = whose_move
+                        (winner, playing) = game_status(board)
+                        whose_move = PLAYER_1
 
                     pygame.display.flip()
-                    board[(placement_row, col)] = whose_move
-                    (winner, playing) = game_status(board)
+
                     if winner is not None:
                         # pygame.draw.rect(
                         #     screen, pygame.color.THECOLORS["orange"], pygame.Rect(30, 30, 60, 60))
                         # None lets you use the default system font
                         display_winner(screen, winner)
-                        pygame.display.flip()
+                       # pygame.display.flip()
                         return winner
                     # TODO need to find the last filled in location in a column and then fill in that spot
                     # really need a dictionary that allows for searching on both the key and the value
@@ -269,16 +312,18 @@ def play(screen, board_spaces_locations, board, board_column_locations):
 def display_winner(screen, winner):
     font = pygame.font.SysFont(None, 100)
     text = font.render(
-        "The winner is " + str(winner), True, ORANGE)
+        str(winner) + " won!", True, pygame.color.THECOLORS["yellowgreen"])
     text_rect = text.get_rect(
-        center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
+        center=(BOARD_WIDTH/2, BOARD_HEIGHT/2))
 
     screen.blit(text, text_rect)
+    pygame.display.flip()
 
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    screen = set_up_screen()
+    set_up_header(screen)
     (board_spaces_locations, board, board_column_locations) = set_up_board(screen)
     winner = play(screen, board_spaces_locations,
                   board, board_column_locations)
@@ -351,6 +396,7 @@ def main():
             if event.type == pygame.QUIT:
                 waiting = False
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                screen = set_up_screen()
                 (board_spaces_locations, board,
                  board_column_locations) = set_up_board(screen)
                 winner = play(screen, board_spaces_locations,
