@@ -7,7 +7,7 @@ BLUE = (0, 128, 255)  # TODO delete eventually
 ORANGE = (255, 100, 0)  # TODO delete eventually
 BOARD_WIDTH = 900
 FOOTER_COLOR = pygame.color.THECOLORS["darkseagreen"]
-FOOTER_HEIGHT = 300
+FOOTER_HEIGHT = 200
 BOARD_HEIGHT = 800
 OPEN_TILE_COLOR = pygame.color.THECOLORS['white']  # TODO need to make gray
 # TODO need to make red
@@ -24,16 +24,34 @@ PLAYER_1 = "red player"
 PLAYER_2 = "yellow player"
 CLEAR_BOARD = 0
 QUIT_GAME = 1
+HEADER_HEIGHT = 100
 
 
 def set_up_screen():
     screen = pygame.display.set_mode(
-        (BOARD_WIDTH, BOARD_HEIGHT + FOOTER_HEIGHT))
+        (BOARD_WIDTH, BOARD_HEIGHT + FOOTER_HEIGHT + HEADER_HEIGHT))
     screen.fill(BACKGROUND_COLOR)
+
     return screen
 
 
+def set_up_header(screen):
+    # cover_up_text = pygame.Rect(0, 0, BOARD_WIDTH, HEADER_HEIGHT)
+    # cover_up_text.center = (BOARD_WIDTH/2, (HEADER_HEIGHT/2))
+    # pygame.draw.rect(
+    #     screen, BACKGROUND_COLOR, cover_up_text)
+    font = pygame.font.SysFont(None, 75)
+    text = font.render("Welcome to Connect Four!", True, FOOTER_COLOR)
+    text_rect = text.get_rect(
+        center=(BOARD_WIDTH/2, HEADER_HEIGHT/2))
+    screen.blit(text, text_rect)
+    pygame.display.flip()
+    pygame.display.update()
+
+
 def set_up_board(screen):
+    set_up_header(screen)
+
     board_spaces_locations = dict()
     board_column_locations = dict()
     board = dict()
@@ -41,8 +59,8 @@ def set_up_board(screen):
         board_column_heap = list()
         for row in range(1, ROW_SPACES):
 
-            screen_location = (math.floor(col*(BOARD_HEIGHT /
-                                               ROW_SPACES) - RADIUS), math.floor(row*(BOARD_WIDTH/ROW_SPACES) - RADIUS))
+            screen_location = (math.floor(col*((BOARD_HEIGHT) /
+                                               ROW_SPACES) - RADIUS), math.floor(row*(BOARD_WIDTH/COLUMN_SPACES) - RADIUS + HEADER_HEIGHT))
             pygame.draw.circle(screen, OPEN_TILE_COLOR,
                                screen_location, RADIUS)
             board_spaces_locations[screen_location] = (row, col)
@@ -79,13 +97,6 @@ def col_winner(board, row, col, player):
 
 
 def left_diagonal_winner(board, row, col, player):
-    # starts from the top right corner
-    # print("row " + str(row))
-    # print("col " + str(col))
-    # print("left  " + str(board[(row, col)]))
-    # print("left  " + str(board[(row-1, col-1)]))
-    # print("left  " + str(board[(row-2, col-2)]))
-    # print("left  " + str(board[(row-3, col-3)]))
     if (board[row, col] == player
         and board[row+1, col-1] == player
         and board[row+2, col-2] == player
@@ -96,10 +107,6 @@ def left_diagonal_winner(board, row, col, player):
 
 
 def right_diagonal_winner(board, row, col, player):
-    # print("row " + str(row))
-    # print("col " + str(col))
-    # print("right  " + str(board[(row, col)]))
-    # starts from the top right corner
     if (board[row, col] == player
         and board[row+1, col+1] == player
         and board[row+2, col+2] == player
@@ -128,23 +135,12 @@ def display_turn(screen, player):
         center=(BOARD_WIDTH/2, (BOARD_HEIGHT + FOOTER_HEIGHT/2)))
 
     screen.blit(text, text_rect)
+
     text = font.render("press space bar to clear", True, GENERAL_TEXT_COLOR)
     text_rect = text.get_rect(
         center=(BOARD_WIDTH/2, (BOARD_HEIGHT + FOOTER_HEIGHT/5)))
-
     screen.blit(text, text_rect)
     pygame.display.flip()
-
-
-def print_board(board, screen):
-    for (row, col) in board:
-        font = pygame.font.SysFont(None, 50)
-        text = font.render(
-            "The winner is " + str((row, col)), True, GENERAL_TEXT_COLOR)
-        text_rect = text.get_rect(
-            center=(BOARD_WIDTH/2 - col, BOARD_HEIGHT/2 - row))
-
-    screen.blit(text, text_rect)
 
 
 def game_status(board):
