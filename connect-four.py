@@ -6,31 +6,30 @@ import pygame
 BLUE = (0, 128, 255)  # TODO delete eventually
 ORANGE = (255, 100, 0)  # TODO delete eventually
 BOARD_WIDTH = 900
-HEADER_COLOR = pygame.color.THECOLORS["darkseagreen"]
-HEADER_HEIGHT = 300
+FOOTER_COLOR = pygame.color.THECOLORS["darkseagreen"]
+FOOTER_HEIGHT = 300
 BOARD_HEIGHT = 800
 OPEN_TILE_COLOR = pygame.color.THECOLORS['white']  # TODO need to make gray
-PLAYER_1_TITLE_COLOR = pygame.color.THECOLORS['red']  # TODO need to make red
+# TODO need to make red
+PLAYER_1_TITLE_COLOR = pygame.color.THECOLORS['firebrick3']
 # TODO need to make yellow
-PLAYER_2_TITLE_COLOR = pygame.color.THECOLORS['yellow']
+PLAYER_2_TITLE_COLOR = pygame.color.THECOLORS['gold1']
+BACKGROUND_COLOR = pygame.color.THECOLORS["darkcyan"]
+GENERAL_TEXT_COLOR = pygame.color.THECOLORS['darkorange3']
 ROW_SPACES = 6 + 1
 COLUMN_SPACES = 7 + 1
 RADIUS = 40
 EMPTY = 0
 PLAYER_1 = "red player"
 PLAYER_2 = "yellow player"
-
-
-def set_up_header(screen):
-    pass
-    # pygame.draw.rect(screen, ORANGE, (BOARD_WIDTH/2,
-    #                                   HEADER_HEIGHT/2, BOARD_WIDTH, BOARD_HEIGHT + HEADER_HEIGHT))
+CLEAR_BOARD = 0
+QUIT_GAME = 1
 
 
 def set_up_screen():
     screen = pygame.display.set_mode(
-        (BOARD_WIDTH, BOARD_HEIGHT + HEADER_HEIGHT))
-    screen.fill(pygame.color.THECOLORS["darkcyan"])
+        (BOARD_WIDTH, BOARD_HEIGHT + FOOTER_HEIGHT))
+    screen.fill(BACKGROUND_COLOR)
     return screen
 
 
@@ -38,7 +37,6 @@ def set_up_board(screen):
     board_spaces_locations = dict()
     board_column_locations = dict()
     board = dict()
-    color = BLUE
     for col in range(1, COLUMN_SPACES):
         board_column_heap = list()
         for row in range(1, ROW_SPACES):
@@ -49,28 +47,15 @@ def set_up_board(screen):
                                screen_location, RADIUS)
             board_spaces_locations[screen_location] = (row, col)
 
-           # board_column_heap.append((row, screen_location))
             heapq.heappush(board_column_heap,
                            (ROW_SPACES - row, screen_location))
-            # print("for location " + str((row, col)) +
-            #       "filling in board_column_heap " + str(board_column_heap))
 
-            board[(row, col)] = EMPTY  # TODO maybe don't need
-        # TODO how going to get all spaces in column?
+            board[(row, col)] = EMPTY
         board_column_locations[col] = board_column_heap
-  #  pygame.draw.rect(screen, color, pygame.Rect(30, 30, 60, 60))
 
     pygame.display.update()  # need to make any updates to the screen to be visible
 
     return (board_spaces_locations, board, board_column_locations)
-
-
-def clear_board():
-    pass  # TODO
-
-
-def player_move(screen, move, player_color):
-    pass  # TODO
 
 
 def row_winner(board, row, col, player):
@@ -125,23 +110,27 @@ def right_diagonal_winner(board, row, col, player):
 
 
 def display_turn(screen, player):
-    cover_up_text = pygame.Rect(0, 0, BOARD_WIDTH, HEADER_HEIGHT)
-    cover_up_text.center = (BOARD_WIDTH/2, (BOARD_HEIGHT + HEADER_HEIGHT/2))
+    cover_up_text = pygame.Rect(0, 0, BOARD_WIDTH, FOOTER_HEIGHT)
+    cover_up_text.center = (BOARD_WIDTH/2, (BOARD_HEIGHT + FOOTER_HEIGHT/2))
     pygame.draw.rect(
-        screen, HEADER_COLOR, cover_up_text)
+        screen, FOOTER_COLOR, cover_up_text)
 
     font = pygame.font.SysFont(None, 50)
 
-    text = font.render("", True, BLUE)  # TODO make var for board color
+    if player == PLAYER_1:
+        text = font.render(
+            "Next move: " + str(player), True, PLAYER_1_TITLE_COLOR)
+    elif player == PLAYER_2:
+        text = font.render(
+            "Next move: " + str(player), True, PLAYER_2_TITLE_COLOR)
+
     text_rect = text.get_rect(
-        center=(BOARD_WIDTH/2, (BOARD_HEIGHT + HEADER_HEIGHT/2)))
+        center=(BOARD_WIDTH/2, (BOARD_HEIGHT + FOOTER_HEIGHT/2)))
 
     screen.blit(text, text_rect)
-
-    text = font.render(
-        "Next move: " + str(player), True, pygame.color.THECOLORS["yellowgreen"])
+    text = font.render("press space bar to clear", True, GENERAL_TEXT_COLOR)
     text_rect = text.get_rect(
-        center=(BOARD_WIDTH/2, (BOARD_HEIGHT + HEADER_HEIGHT/2)))
+        center=(BOARD_WIDTH/2, (BOARD_HEIGHT + FOOTER_HEIGHT/5)))
 
     screen.blit(text, text_rect)
     pygame.display.flip()
@@ -151,7 +140,7 @@ def print_board(board, screen):
     for (row, col) in board:
         font = pygame.font.SysFont(None, 50)
         text = font.render(
-            "The winner is " + str((row, col)), True, pygame.color.THECOLORS["yellowgreen"])
+            "The winner is " + str((row, col)), True, GENERAL_TEXT_COLOR)
         text_rect = text.get_rect(
             center=(BOARD_WIDTH/2 - col, BOARD_HEIGHT/2 - row))
 
@@ -159,83 +148,44 @@ def print_board(board, screen):
 
 
 def game_status(board):
-   # print("BOARD " + str(board))
-
     # Check for row win
     for (row, col) in board:
         if (row + 3) < ROW_SPACES:
             winner = row_winner(board, row, col, PLAYER_1)
             if winner is not None:
-                print("WINNER1")
                 return (winner, False)
 
             winner = row_winner(board, row, col, PLAYER_2)
             if winner is not None:
-                print("WINNER2")
                 return (winner, False)
 
         if (col + 3) < COLUMN_SPACES:
             winner = col_winner(board, row, col, PLAYER_1)
             if winner is not None:
-                print("WINNER1")
                 return (winner, False)
 
             winner = col_winner(board, row, col, PLAYER_2)
             if winner is not None:
-                print("WINNER2")
                 return (winner, False)
 
         if (col + 3) < COLUMN_SPACES and (row + 3) < ROW_SPACES:
-            print("right winner?")
             winner = right_diagonal_winner(board, row, col, PLAYER_1)
             if winner is not None:
-                print("WINNER1")
                 return (winner, False)
 
             winner = right_diagonal_winner(board, row, col, PLAYER_2)
             if winner is not None:
-                print("WINNER2")
                 return (winner, False)
 
         if (col - 3) > 0 and (row + 3) < ROW_SPACES:
-            print("left winner?")
             winner = left_diagonal_winner(board, row, col, PLAYER_1)
             if winner is not None:
-                print("WINNER1")
                 return (winner, False)
 
             winner = left_diagonal_winner(board, row, col, PLAYER_2)
             if winner is not None:
-                print("WINNER2")
                 return (winner, False)
-        # if (col - 3) > 0 and (row - 3) > 0:
-        #     print("left winner?")
-        #     winner = left_diagonal_winner(board, row, col, PLAYER_1)
-        #     if winner is not None:
-        #         print("WINNER1")
-        #         return (winner, False)
-
-        #     winner = left_diagonal_winner(board, row, col, PLAYER_2)
-        #     if winner is not None:
-        #         print("WINNER2")
-        #         return (winner, False)
-
     return (None, True)  # no winner and still playing
-    #     if winner is not None:
-    #         return winner
-    # else:
-    #     return
-    # if (board[row, col] == PLAYER_1
-    #     and board[row + 1, col] == PLAYER_1
-    #     and board[row + 2, col] == PLAYER_1
-    #         and board[row + 3, col] == PLAYER_1):
-
-    #     return PLAYER_1  # winner
-
-    # Check for col win
-    # Check for right diagonal win
-    # Check for left diagonal win
-    pass  # TODO need to figure out how are going to decide who won
 
 
 def play(screen, board_spaces_locations, board, board_column_locations):
@@ -248,9 +198,9 @@ def play(screen, board_spaces_locations, board, board_column_locations):
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                playing = False
+                return QUIT_GAME
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                clear_board = True  # clear the board when you press the space key
+                return CLEAR_BOARD  # no winner b/c want to clear board when you press the space key
 
             if event.type != pygame.MOUSEBUTTONUP:
                 continue  # wait for the user to click something
@@ -262,7 +212,6 @@ def play(screen, board_spaces_locations, board, board_column_locations):
 
                 if (math.sqrt(x_squared + y_squared)) < 60:
                     (row, col) = board_location
-                    # print("column " + str(col))
 
                     if (len(board_column_locations[col]) == 0):
                         # all the spaces in the column are taken so the click was on accident
@@ -287,32 +236,14 @@ def play(screen, board_spaces_locations, board, board_column_locations):
                     pygame.display.flip()
 
                     if winner is not None:
-                        # pygame.draw.rect(
-                        #     screen, pygame.color.THECOLORS["orange"], pygame.Rect(30, 30, 60, 60))
-                        # None lets you use the default system font
                         display_winner(screen, winner)
-                       # pygame.display.flip()
                         return winner
-                    # TODO need to find the last filled in location in a column and then fill in that spot
-                    # really need a dictionary that allows for searching on both the key and the value
-
-        if clear_board:
-            # TODO
-            color = BLUE
-        else:
-            # TODO
-            color = ORANGE
-
-      #  pygame.draw.circle(screen, color, (300, 60), 40)
-      #  pygame.draw.rect(screen, color, pygame.Rect(30, 30, 60, 60))
-
-        # pygame.display.flip()  # need to make any updates to the screen to be visible
 
 
 def display_winner(screen, winner):
     font = pygame.font.SysFont(None, 100)
     text = font.render(
-        str(winner) + " won!", True, pygame.color.THECOLORS["yellowgreen"])
+        str(winner) + " won!", True, pygame.color.THECOLORS["darkorange2"])
     text_rect = text.get_rect(
         center=(BOARD_WIDTH/2, BOARD_HEIGHT/2))
 
@@ -323,87 +254,22 @@ def display_winner(screen, winner):
 def main():
     pygame.init()
     screen = set_up_screen()
-    set_up_header(screen)
     (board_spaces_locations, board, board_column_locations) = set_up_board(screen)
     winner = play(screen, board_spaces_locations,
                   board, board_column_locations)
-    # display_winner(screen, winner)
-    # playing = True
-    # clear_board = False
-    # whose_move = PLAYER_1
-
-    # while playing:
-    #     for event in pygame.event.get():
-    #         if event.type == pygame.QUIT:
-    #             playing = False
-    #         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-    #             clear_board = True  # clear the board when you press the space key
-
-    #         if event.type != pygame.MOUSEBUTTONUP:
-    #             continue  # wait for the user to click something
-
-    #         (clicked_x, clicked_y) = event.pos
-    #         for (clicked_circle_screen_loc, board_location) in board_spaces_locations.items():
-    #             x_squared = (clicked_x - clicked_circle_screen_loc[0])**2
-    #             y_squared = (clicked_y - clicked_circle_screen_loc[1])**2
-
-    #             if (math.sqrt(x_squared + y_squared)) < 60:
-    #                 (row, col) = board_location
-    #                 (placement_row, open_screen_loc) = heapq.heappop(
-    #                     board_column_locations[col])
-
-    #                 board[(placement_row, col)] = whose_move
-
-    #                 if whose_move == PLAYER_1:
-    #                     pygame.draw.circle(screen, PLAYER_1_TITLE_COLOR,
-    #                                        open_screen_loc, RADIUS)
-    #                     whose_move = PLAYER_2
-    #                 else:
-    #                     whose_move = PLAYER_1
-    #                     pygame.draw.circle(screen, PLAYER_2_TITLE_COLOR,
-    #                                        open_screen_loc, RADIUS)
-
-    #                 (winner, playing) = game_status(board)
-    #                 if winner is not None:
-    #                     # pygame.draw.rect(
-    #                     #     screen, pygame.color.THECOLORS["orange"], pygame.Rect(30, 30, 60, 60))
-    #                     # None lets you use the default system font
-    #                     font = pygame.font.SysFont(None, 100)
-    #                     text = font.render(
-    #                         "The winner is " + str(winner), True, ORANGE)
-    #                     text_rect = text.get_rect(
-    #                         center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
-
-    #                     screen.blit(text, text_rect)
-    #                 # TODO need to find the last filled in location in a column and then fill in that spot
-    #                 # really need a dictionary that allows for searching on both the key and the value
-
-    #     if clear_board:
-    #         # TODO
-    #         color = BLUE
-    #     else:
-    #         # TODO
-    #         color = ORANGE
-
-    #  pygame.draw.circle(screen, color, (300, 60), 40)
-    #  pygame.draw.rect(screen, color, pygame.Rect(30, 30, 60, 60))
-
-    # pygame.display.flip()  # need to make any updates to the screen to be visible
 
     waiting = True
     while waiting:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                waiting = False
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            if winner == CLEAR_BOARD or (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
                 screen = set_up_screen()
                 (board_spaces_locations, board,
                  board_column_locations) = set_up_board(screen)
                 winner = play(screen, board_spaces_locations,
                               board, board_column_locations)
-                # TODO HERE handle and tied game
-            # TODO handle resetting the board to play again
-            pygame.display.flip()
+            if event.type == pygame.QUIT or winner == QUIT_GAME:
+                waiting = False
+                return
 
 
 if __name__ == "__main__":
