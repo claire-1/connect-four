@@ -10,9 +10,7 @@ FOOTER_COLOR = pygame.color.THECOLORS["darkseagreen"]
 FOOTER_HEIGHT = 200
 BOARD_HEIGHT = 800
 OPEN_TILE_COLOR = pygame.color.THECOLORS['white']  # TODO need to make gray
-# TODO need to make red
 PLAYER_1_TITLE_COLOR = pygame.color.THECOLORS['firebrick3']
-# TODO need to make yellow
 PLAYER_2_TITLE_COLOR = pygame.color.THECOLORS['gold1']
 BACKGROUND_COLOR = pygame.color.THECOLORS["darkcyan"]
 GENERAL_TEXT_COLOR = pygame.color.THECOLORS['darkorange3']
@@ -36,10 +34,6 @@ def set_up_screen():
 
 
 def set_up_header(screen):
-    # cover_up_text = pygame.Rect(0, 0, BOARD_WIDTH, HEADER_HEIGHT)
-    # cover_up_text.center = (BOARD_WIDTH/2, (HEADER_HEIGHT/2))
-    # pygame.draw.rect(
-    #     screen, BACKGROUND_COLOR, cover_up_text)
     font = pygame.font.SysFont(None, 75)
     text = font.render("Welcome to Connect Four!", True, FOOTER_COLOR)
     text_rect = text.get_rect(
@@ -265,6 +259,7 @@ def main():
                               board, board_column_locations)
             if event.type == pygame.QUIT or winner == QUIT_GAME:
                 waiting = False
+                pygame.quit()
                 return
 
 
