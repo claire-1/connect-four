@@ -1,5 +1,6 @@
 import heapq
 import math
+import time
 
 import pygame
 
@@ -23,6 +24,8 @@ PLAYER_2 = "yellow player"
 CLEAR_BOARD = 0
 QUIT_GAME = 1
 HEADER_HEIGHT = 100
+CLEAR_PAUSE_TIME = 0.02
+FILL_PAUSE_TIME = 0.1
 
 
 def set_up_screen():
@@ -34,11 +37,15 @@ def set_up_screen():
 
 
 def set_up_header(screen):
+    pygame.draw.rect(screen, FOOTER_COLOR,
+                     (0, 0, BOARD_WIDTH, HEADER_HEIGHT))
     font = pygame.font.SysFont(None, 75)
-    text = font.render("Welcome to Connect Four!", True, FOOTER_COLOR)
-    text_rect = text.get_rect(
-        center=(BOARD_WIDTH/2, HEADER_HEIGHT/2))
+    text = font.render("Welcome to Connect Four!", True, BACKGROUND_COLOR)
+    text_rect = text.get_rect(center=(BOARD_WIDTH/2, HEADER_HEIGHT/2))
+    pygame.draw.rect(screen, FOOTER_COLOR, text_rect)
+
     screen.blit(text, text_rect)
+
     pygame.display.flip()
     pygame.display.update()
 
@@ -178,6 +185,31 @@ def game_status(board):
     return (None, True)  # no winner and still playing
 
 
+def animate_tile_drop(screen, current_position, destination, row, color):
+
+    pygame.draw.circle(screen, color,
+                       current_position, RADIUS)
+    (x_pos, not_needed_y) = current_position
+    pygame.display.flip()
+    time.sleep(FILL_PAUSE_TIME)
+    while current_position < destination:
+
+        pygame.draw.circle(screen, OPEN_TILE_COLOR,
+                           current_position, RADIUS)
+        pygame.display.flip()
+        time.sleep(CLEAR_PAUSE_TIME)
+
+        row = row + 1
+        next_y_pos = math.floor(
+            row*(BOARD_WIDTH/COLUMN_SPACES) - RADIUS + HEADER_HEIGHT)
+        current_position = (x_pos, next_y_pos)
+
+        pygame.draw.circle(screen, color,
+                           current_position, RADIUS)
+        pygame.display.flip()
+        time.sleep(FILL_PAUSE_TIME)
+
+
 def play(screen, board_spaces_locations, board, board_column_locations):
     playing = True
     clear_board = False
@@ -200,26 +232,27 @@ def play(screen, board_spaces_locations, board, board_column_locations):
                 x_squared = (clicked_x - clicked_circle_screen_loc[0])**2
                 y_squared = (clicked_y - clicked_circle_screen_loc[1])**2
 
-                if (math.sqrt(x_squared + y_squared)) < 60:
-                    (row, col) = board_location
+                if (math.sqrt(x_squared + y_squared)) < RADIUS:  # TODO check this; why was it 60?
+                    (click_result_row, click_result_col) = board_location
 
-                    if (len(board_column_locations[col]) == 0):
+                    if (len(board_column_locations[click_result_col]) == 0):
                         # all the spaces in the column are taken so the click was on accident
                         continue
 
                     (placement_row, open_screen_loc) = heapq.heappop(
-                        board_column_locations[col])
+                        board_column_locations[click_result_col])
 
                     if whose_move == PLAYER_1:
-                        pygame.draw.circle(screen, PLAYER_1_TITLE_COLOR,
-                                           open_screen_loc, RADIUS)
-                        board[(placement_row, col)] = whose_move
+                        pos = clicked_circle_screen_loc
+                        animate_tile_drop(
+                            screen, clicked_circle_screen_loc, open_screen_loc, click_result_row, PLAYER_1_TITLE_COLOR)
+                        board[(placement_row, click_result_col)] = whose_move
                         (winner, playing) = game_status(board)
                         whose_move = PLAYER_2
                     else:
-                        pygame.draw.circle(screen, PLAYER_2_TITLE_COLOR,
-                                           open_screen_loc, RADIUS)
-                        board[(placement_row, col)] = whose_move
+                        animate_tile_drop(
+                            screen, clicked_circle_screen_loc, open_screen_loc, click_result_row, PLAYER_2_TITLE_COLOR)
+                        board[(placement_row, click_result_col)] = whose_move
                         (winner, playing) = game_status(board)
                         whose_move = PLAYER_1
 
@@ -233,7 +266,7 @@ def play(screen, board_spaces_locations, board, board_column_locations):
 def display_winner(screen, winner):
     font = pygame.font.SysFont(None, 100)
     text = font.render(
-        str(winner) + " won!", True, pygame.color.THECOLORS["darkorange2"])
+        str(winner) + " won!", True, GENERAL_TEXT_COLOR)
     text_rect = text.get_rect(
         center=(BOARD_WIDTH/2, BOARD_HEIGHT/2))
 
