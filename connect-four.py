@@ -4,13 +4,13 @@ import time
 
 import pygame
 
-BLUE = (0, 128, 255)  # TODO delete eventually
-ORANGE = (255, 100, 0)  # TODO delete eventually
+# To run the game: $ python3 connect-four.py
+
 BOARD_WIDTH = 900
 FOOTER_COLOR = pygame.color.THECOLORS["darkseagreen"]
 FOOTER_HEIGHT = 200
 BOARD_HEIGHT = 800
-OPEN_TILE_COLOR = pygame.color.THECOLORS['white']  # TODO need to make gray
+OPEN_TILE_COLOR = pygame.color.THECOLORS['white']
 PLAYER_1_TITLE_COLOR = pygame.color.THECOLORS['firebrick3']
 PLAYER_2_TITLE_COLOR = pygame.color.THECOLORS['gold1']
 BACKGROUND_COLOR = pygame.color.THECOLORS["darkcyan"]
@@ -186,12 +186,12 @@ def game_status(board):
 
 
 def animate_tile_drop(screen, current_position, destination, row, color):
-
     pygame.draw.circle(screen, color,
                        current_position, RADIUS)
     (x_pos, not_needed_y) = current_position
     pygame.display.flip()
     time.sleep(FILL_PAUSE_TIME)
+
     while current_position < destination:
 
         pygame.draw.circle(screen, OPEN_TILE_COLOR,
@@ -232,7 +232,7 @@ def play(screen, board_spaces_locations, board, board_column_locations):
                 x_squared = (clicked_x - clicked_circle_screen_loc[0])**2
                 y_squared = (clicked_y - clicked_circle_screen_loc[1])**2
 
-                if (math.sqrt(x_squared + y_squared)) < RADIUS:  # TODO check this; why was it 60?
+                if (math.sqrt(x_squared + y_squared)) < RADIUS:
                     (click_result_row, click_result_col) = board_location
 
                     if (len(board_column_locations[click_result_col]) == 0):
@@ -297,5 +297,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # execute only if run as a script
     main()
