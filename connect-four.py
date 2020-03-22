@@ -19,6 +19,7 @@ ROW_SPACES = 6 + 1
 COLUMN_SPACES = 7 + 1
 RADIUS = 40
 EMPTY = 0
+NOT_EMPTY = 1
 PLAYER_1 = "red player"
 PLAYER_2 = "yellow player"
 CLEAR_BOARD = 0
@@ -186,13 +187,16 @@ def game_status(board):
 
 
 def animate_tile_drop(screen, current_position, destination, row, color):
-    pygame.draw.circle(screen, color,
-                       current_position, RADIUS)
     (x_pos, not_needed_y) = current_position
     pygame.display.flip()
     time.sleep(FILL_PAUSE_TIME)
 
     while current_position < destination:
+
+        pygame.draw.circle(screen, color,
+                           current_position, RADIUS)
+        pygame.display.flip()
+        time.sleep(FILL_PAUSE_TIME)
 
         pygame.draw.circle(screen, OPEN_TILE_COLOR,
                            current_position, RADIUS)
@@ -204,10 +208,10 @@ def animate_tile_drop(screen, current_position, destination, row, color):
             row*(BOARD_WIDTH/COLUMN_SPACES) - RADIUS + HEADER_HEIGHT)
         current_position = (x_pos, next_y_pos)
 
-        pygame.draw.circle(screen, color,
-                           current_position, RADIUS)
-        pygame.display.flip()
-        time.sleep(FILL_PAUSE_TIME)
+    pygame.draw.circle(screen, color,
+                       destination, RADIUS)
+
+    return
 
 
 def play(screen, board_spaces_locations, board, board_column_locations):
@@ -244,9 +248,12 @@ def play(screen, board_spaces_locations, board, board_column_locations):
 
                     if whose_move == PLAYER_1:
                         pos = clicked_circle_screen_loc
+
                         animate_tile_drop(
                             screen, clicked_circle_screen_loc, open_screen_loc, click_result_row, PLAYER_1_TITLE_COLOR)
+
                         board[(placement_row, click_result_col)] = whose_move
+
                         (winner, playing) = game_status(board)
                         whose_move = PLAYER_2
                     else:
