@@ -283,6 +283,7 @@ def display_winner(screen, winner):
 
 def main():
     pygame.init()
+    pygame.mixer.quit()
     screen = set_up_screen()
     (board_spaces_locations, board, board_column_locations) = set_up_board(screen)
     winner = play(screen, board_spaces_locations,
